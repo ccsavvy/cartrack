@@ -15,7 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -33,18 +32,28 @@ class MainActivity : ComponentActivity() {
                             .fillMaxSize()
                             .wrapContentSize(Alignment.Center)
                     ) {
+
+                        // username
+                        var usernameValue by remember { mutableStateOf("") }
+
+                        // password
+                        var passwordValue by remember { mutableStateOf("") }
+
+                        // remember me
+                        val isChecked = remember { mutableStateOf(false) }
+
                         UsernameInputField(
-                            value = "",
-                            onInput = {},
+                            value = usernameValue,
+                            onValueChange = { usernameValue = it },
                             modifier = Modifier.padding(8.dp)
                         )
                         PasswordInputField(
-                            value = TextFieldValue(),
-                            onInput = {},
+                            value = passwordValue,
+                            onValueChange = { passwordValue = it },
                             label = { Text("Foo") },
                             modifier = Modifier.padding(8.dp)
                         )
-                        RememberMe()
+                        RememberMe(isChecked = isChecked)
                     }
                 }
             }
@@ -55,15 +64,14 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun UsernameInputField(
     value: String,
-    onInput: (String) -> Unit,
+    onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     keyboardOptions: KeyboardOptions = KeyboardOptions(),
     placeholder: @Composable (() -> Unit)? = null,
 ) {
-    var textValue by remember { mutableStateOf(value) }
     TextField(
-        value = textValue,
-        onValueChange = { onInput(it) },
+        value = value,
+        onValueChange = onValueChange,
         label = { Text(stringResource(id = R.string.username)) },
         modifier = modifier
     )
@@ -71,20 +79,18 @@ fun UsernameInputField(
 
 @Composable
 fun PasswordInputField(
-    value: TextFieldValue,
-    onInput: (TextFieldValue) -> Unit,
+    value: String,
+    onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     keyboardOptions: KeyboardOptions = KeyboardOptions(),
     label: (@Composable () -> Unit)? = null,
     placeholder: (@Composable () -> Unit)? = null,
 ) {
 
-    var textValue by remember { mutableStateOf(value) }
     var passwordVisibility by remember { mutableStateOf(false) }
-
     TextField(
-        value = textValue,
-        onValueChange = { onInput(it) },
+        value = value,
+        onValueChange = onValueChange,
         label = { Text(stringResource(id = R.string.password)) },
         visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -104,8 +110,7 @@ fun PasswordInputField(
 }
 
 @Composable
-fun RememberMe() {
-    val isChecked = remember { mutableStateOf(false) }
+fun RememberMe(isChecked: MutableState<Boolean>) {
     Row(modifier = Modifier.padding(8.dp)) {
         Checkbox(
             checked = isChecked.value,
@@ -124,14 +129,23 @@ fun DefaultPreview() {
                 .fillMaxSize()
                 .wrapContentSize(Alignment.Center)
         ) {
-            UsernameInputField(value = "", onInput = {}, modifier = Modifier.padding(8.dp))
+            // username
+            var usernameValue by remember { mutableStateOf("") }
+
+            // password
+            var passwordValue by remember { mutableStateOf("") }
+
+            // remember me
+            val isChecked = remember { mutableStateOf(false) }
+
+            UsernameInputField(value = "", onValueChange = { usernameValue = it }, modifier = Modifier.padding(8.dp))
             PasswordInputField(
-                value = TextFieldValue(),
-                onInput = {},
+                value = "",
+                onValueChange = { passwordValue = it },
                 modifier = Modifier.padding(8.dp),
                 label = { Text("Foo") }
             )
-            RememberMe()
+            RememberMe(isChecked = isChecked)
         }
     }
 }

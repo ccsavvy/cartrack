@@ -29,7 +29,22 @@ fun Greeting(name: String) {
     Text(text = "Hello $name!")
 }
 
-@Preview(showBackground = true)
+@Composable
+fun UsernameInputField(
+    value: String,
+    onInput: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    keyboardOptions: KeyboardOptions = KeyboardOptions(),
+    placeholder: @Composable (() -> Unit)? = null,
+) {
+    var textValue by remember { mutableStateOf(value) }
+    TextField(
+        value = textValue,
+        onValueChange = { onInput(it) },
+        label = { Text(stringResource(id = R.string.username)) },
+        modifier = modifier
+    )
+}
 @Composable
 fun DefaultPreview() {
     CartrackTheme {

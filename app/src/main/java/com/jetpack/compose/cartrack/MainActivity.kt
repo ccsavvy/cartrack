@@ -10,15 +10,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jetpack.compose.cartrack.ui.theme.CartrackTheme
+import com.jetpack.compose.cartrack.viewmodel.MainViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,27 +37,71 @@ class MainActivity : ComponentActivity() {
                             .wrapContentSize(Alignment.Center)
                     ) {
 
+                        val mainViewModel: MainViewModel =
+                            viewModel(modelClass = MainViewModel::class.java)
+
                         // username
-                        var usernameValue by remember { mutableStateOf("") }
+                        val username: String by mainViewModel.username.observeAsState(initial = "")
+                        var usernameErrorState by remember { mutableStateOf(false) }
+                        var userNameErrorMessage by remember { mutableStateOf("") }
 
                         // password
-                        var passwordValue by remember { mutableStateOf("") }
+                        val password: String by mainViewModel.password.observeAsState(initial = "")
+                        var passwordErrorState by remember { mutableStateOf(false) }
+                        var passwordErrorMessage by remember { mutableStateOf("") }
 
                         // remember me
                         val isChecked = remember { mutableStateOf(false) }
 
                         UsernameInputField(
-                            value = usernameValue,
-                            onValueChange = { usernameValue = it },
-                            modifier = Modifier.padding(8.dp)
+                            value = username,
+                            onValueChange = {
+                                mainViewModel.onUserNameChange(it)
+                                when (mainViewModel.validateUsername(username)) {
+                                    is MainViewModel.LoginUsernameException.EmptyUsernameException -> {
+                                        usernameErrorState = true
+                                        userNameErrorMessage =
+                                            resources.getString(R.string.error_username_empty)
+                                    }
+                                    is MainViewModel.LoginUsernameException.InvalidUsernameException -> {
+                                        usernameErrorState = true
+                                        userNameErrorMessage =
+                                            resources.getString(R.string.error_invalid_credentials)
+                                    }
+                                    null -> {
+                                        usernameErrorState = false
+                                        userNameErrorMessage = ""
+                                    }
+                                }
+                            },
+                            modifier = Modifier.padding(8.dp),
+                            errorMessage = userNameErrorMessage,
+                            errorState = usernameErrorState
                         )
+
                         PasswordInputField(
-                            value = passwordValue,
-                            onValueChange = { passwordValue = it },
+                            value = password,
+                            onValueChange = {
+                                mainViewModel.onPasswordChange(it)
+                                when (mainViewModel.validatePassword(password)) {
+                                    is MainViewModel.LoginPasswordException.EmptyPasswordException -> {
+                                        passwordErrorState = true
+                                        passwordErrorMessage =
+                                            resources.getString(R.string.error_password_empty)
+                                    }
+                                    null -> {
+                                        passwordErrorState = false
+                                        passwordErrorMessage = ""
+                                    }
+                                }
+                            },
                             label = { Text("Foo") },
-                            modifier = Modifier.padding(8.dp)
+                            modifier = Modifier.padding(8.dp),
+                            errorMessage = passwordErrorMessage,
+                            errorState = passwordErrorState
                         )
-                        RememberMe(isChecked = isChecked)
+                        RememberMeCheckBox(isChecked = isChecked)
+                        LoginButton()
                     }
                 }
             }
@@ -66,14 +114,22 @@ fun UsernameInputField(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
+    errorMessage: String,
+    errorState: Boolean,
     keyboardOptions: KeyboardOptions = KeyboardOptions(),
     placeholder: @Composable (() -> Unit)? = null,
 ) {
     TextField(
         value = value,
         onValueChange = onValueChange,
-        label = { Text(stringResource(id = R.string.username)) },
-        modifier = modifier
+        label = {
+            Text(
+                text = if (errorState) errorMessage
+                else stringResource(id = R.string.username)
+            )
+        },
+        modifier = modifier,
+        isError = errorState
     )
 }
 
@@ -82,6 +138,8 @@ fun PasswordInputField(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
+    errorMessage: String,
+    errorState: Boolean,
     keyboardOptions: KeyboardOptions = KeyboardOptions(),
     label: (@Composable () -> Unit)? = null,
     placeholder: (@Composable () -> Unit)? = null,
@@ -91,7 +149,12 @@ fun PasswordInputField(
     TextField(
         value = value,
         onValueChange = onValueChange,
-        label = { Text(stringResource(id = R.string.password)) },
+        label = {
+            Text(
+                text = if (errorState) errorMessage
+                else stringResource(id = R.string.password)
+            )
+        },
         visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
         trailingIcon = {
@@ -105,18 +168,37 @@ fun PasswordInputField(
                 Icon(imageVector = image, "")
             }
         },
-        modifier = modifier
+        modifier = modifier,
+        isError = errorState
     )
 }
 
 @Composable
-fun RememberMe(isChecked: MutableState<Boolean>) {
+fun RememberMeCheckBox(isChecked: MutableState<Boolean>) {
     Row(modifier = Modifier.padding(8.dp)) {
         Checkbox(
             checked = isChecked.value,
             onCheckedChange = { isChecked.value = it }
         )
         Text(text = stringResource(id = R.string.rememberme))
+    }
+}
+
+@Composable
+fun LoginButton() {
+    Row(
+        horizontalArrangement = Arrangement.End,
+        modifier = Modifier.padding(8.dp)
+    ) {
+        Button(
+            onClick = { /* Do something! */ },
+            colors = ButtonDefaults.textButtonColors(
+                backgroundColor = Color.Blue,
+                contentColor = Color.White
+            )
+        ) {
+            Text(stringResource(id = R.string.login))
+        }
     }
 }
 
@@ -131,21 +213,34 @@ fun DefaultPreview() {
         ) {
             // username
             var usernameValue by remember { mutableStateOf("") }
+            var usernameErrorState by remember { mutableStateOf(false) }
+            var usernameErrorMessage by remember { mutableStateOf("") }
 
             // password
             var passwordValue by remember { mutableStateOf("") }
+            var passwordErrorState by remember { mutableStateOf(false) }
+            var passwordErrorMessage by remember { mutableStateOf("") }
 
             // remember me
             val isChecked = remember { mutableStateOf(false) }
 
-            UsernameInputField(value = "", onValueChange = { usernameValue = it }, modifier = Modifier.padding(8.dp))
+            UsernameInputField(
+                value = "",
+                onValueChange = { usernameValue = it },
+                modifier = Modifier.padding(8.dp),
+                errorMessage = usernameErrorMessage,
+                errorState = usernameErrorState
+            )
             PasswordInputField(
                 value = "",
                 onValueChange = { passwordValue = it },
+                label = { Text("Foo") },
                 modifier = Modifier.padding(8.dp),
-                label = { Text("Foo") }
+                errorMessage = passwordErrorMessage,
+                errorState = passwordErrorState
             )
-            RememberMe(isChecked = isChecked)
+            RememberMeCheckBox(isChecked = isChecked)
+            LoginButton()
         }
     }
 }

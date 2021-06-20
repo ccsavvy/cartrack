@@ -3,4 +3,9 @@
     <string name="username">Username: </string>
     <string name="password">Password: </string>
     <string name="rememberme">Remember me</string>
+    <string name="login">Login</string>
+    <string name="error_invalid_credentials">Invalid login credentials</string>
+    <string name="error_username_empty">Username is empty</string>
+    <string name="error_password_empty">Password field is empty</string>
+    <string name="error_localization_not_supported">Error (localization not supported)</string>
 </resources>

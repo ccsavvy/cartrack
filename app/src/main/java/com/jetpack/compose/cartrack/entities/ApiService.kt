@@ -41,7 +41,7 @@ class ApiService {
         .build()
         .create(Api::class.java)
 
-    fun getDays(): Single<Repository> {
+    fun getDays(): Single<CarTrackUsers> {
         return api.getRepository()
     }
 }

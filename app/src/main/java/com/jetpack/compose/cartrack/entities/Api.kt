@@ -5,5 +5,5 @@ import retrofit2.http.GET
 
 interface Api {
     @GET("users")
-    fun getRepository(): Single<CarTrackUsers>
+    fun getRepository(): Single<List<CarTrackUsers>>
 }

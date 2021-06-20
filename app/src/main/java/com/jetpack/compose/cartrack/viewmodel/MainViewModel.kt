@@ -1,12 +1,16 @@
 package com.jetpack.compose.cartrack.viewmodel
 
 import android.app.Application
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.jetpack.compose.cartrack.dao.UserDB
 import com.jetpack.compose.cartrack.entities.ApiService
-import com.jetpack.compose.cartrack.model.User
+import com.jetpack.compose.cartrack.entities.CarTrackUsers
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.observers.DisposableSingleObserver
+import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.launch
 import java.util.regex.Pattern
 
@@ -43,12 +47,33 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
         _password.value = newPassword
     }
 
-    private fun storeRepositoriesLocally(data: User) {
+    private fun storeRepositoriesLocally(data: List<CarTrackUsers>) {
         launch {
             val dao = UserDB(getApplication()).userRepositoryDao()
             dao.deleteAllUsers()
-            val result = dao.saveUser(data)
         }
+    }
+
+    private fun fetchFromRemote() {
+        disposable.add(
+            apiService.getCarTrackUsers()
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(object : DisposableSingleObserver<List<CarTrackUsers>>() {
+
+                    override fun onSuccess(data: List<CarTrackUsers>) {
+                        Toast.makeText(
+                            getApplication(),
+                            "Repositories retrieved from endpoint",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+
+                    override fun onError(e: Throwable) {
+                        e.printStackTrace()
+                    }
+                })
+        )
     }
 
     fun validateUsername(username: String): LoginUsernameException? {

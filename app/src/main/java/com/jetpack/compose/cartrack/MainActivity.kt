@@ -45,6 +45,25 @@ fun UsernameInputField(
         modifier = modifier
     )
 }
+
+@Composable
+fun PasswordInputField(
+    value: TextFieldValue,
+    onInput: (TextFieldValue) -> Unit,
+    modifier: Modifier = Modifier,
+    keyboardOptions: KeyboardOptions = KeyboardOptions(),
+    label: (@Composable () -> Unit)? = null,
+    placeholder: (@Composable () -> Unit)? = null,
+) {
+    var passwordVisible by remember { mutableStateOf(false) }
+    var textValue by remember { mutableStateOf(value) }
+    TextField(
+        value = textValue,
+        onValueChange = { onInput(it) },
+        label = { Text(stringResource(id = R.string.password)) },
+        modifier = modifier
+    )
+}
 @Composable
 fun DefaultPreview() {
     CartrackTheme {

@@ -140,3 +140,6 @@ hs_err_pid*
 .gradle/7.1/fileHashes/fileHashes.lock
 .gradle/7.1/fileHashes/resourceHashesCache.bin
 .gradle/7.1/gc.properties
+.gradle/checksums/md5-checksums.bin
+.gradle/checksums/sha1-checksums.bin
+.idea/libraries/Gradle__androidx_compose_material_material_icons_extended_1_0_0_beta09_aar.xml

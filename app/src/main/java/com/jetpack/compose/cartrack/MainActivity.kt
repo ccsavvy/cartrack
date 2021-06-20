@@ -76,9 +76,24 @@ fun RememberMe() {
         Text(text = stringResource(id = R.string.rememberme))
     }
 }
+
+@Preview(widthDp = 640, heightDp = 620, showBackground = true)
 @Composable
 fun DefaultPreview() {
-    CartrackTheme {
-        Greeting("Android")
+    CarTrackTheme {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .wrapContentSize(Alignment.Center)
+        ) {
+            UsernameInputField(value = "", onInput = {}, modifier = Modifier.padding(8.dp))
+            PasswordInputField(
+                value = TextFieldValue(),
+                onInput = {},
+                modifier = Modifier.padding(8.dp),
+                label = { Text("Foo") }
+            )
+            RememberMe()
+        }
     }
 }

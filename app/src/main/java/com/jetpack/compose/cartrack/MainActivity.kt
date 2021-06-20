@@ -64,6 +64,18 @@ fun PasswordInputField(
         modifier = modifier
     )
 }
+
+@Composable
+fun RememberMe() {
+    val isChecked = remember { mutableStateOf(false) }
+    Row(modifier = Modifier.padding(8.dp)) {
+        Checkbox(
+            checked = isChecked.value,
+            onCheckedChange = { isChecked.value = it }
+        )
+        Text(text = stringResource(id = R.string.rememberme))
+    }
+}
 @Composable
 fun DefaultPreview() {
     CartrackTheme {

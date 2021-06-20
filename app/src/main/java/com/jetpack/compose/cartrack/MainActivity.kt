@@ -13,13 +13,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.jetpack.compose.cartrack.ui.theme.CarTrackTheme
+import com.jetpack.compose.cartrack.ui.theme.CartrackTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            CarTrackTheme {
+            CartrackTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colors.background) {
                     Column(
@@ -102,7 +102,7 @@ fun RememberMe() {
 @Preview(widthDp = 640, heightDp = 620, showBackground = true)
 @Composable
 fun DefaultPreview() {
-    CarTrackTheme {
+    CartrackTheme {
         Column(
             Modifier
                 .fillMaxSize()

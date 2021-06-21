@@ -2,7 +2,7 @@
 
 This project is intended to respond mobile challenge for mobile Android application developer role.
 
-## Authors
+## Author
 
 * **Christian Lumapac**
 

@@ -1,12 +1,14 @@
 package com.jetpack.compose.cartrack.viewmodel
 
 import android.app.Application
+import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.jetpack.compose.cartrack.dao.UserDB
 import com.jetpack.compose.cartrack.entities.ApiService
 import com.jetpack.compose.cartrack.entities.CarTrackUsers
+import com.jetpack.compose.cartrack.model.Repository
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.observers.DisposableSingleObserver
@@ -29,12 +31,15 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
     private val _password = MutableLiveData("")
     private val _userNameState = MutableLiveData(false)
     private val _passwordState = MutableLiveData(false)
+    private val _isRememberMeChecked = MutableLiveData(false)
 
     val username: LiveData<String> = _username
     val password: LiveData<String> = _password
 
-    var usernameState: LiveData<Boolean> = _userNameState
-    var passwordState: LiveData<Boolean> = _passwordState
+    val usernameState: LiveData<Boolean> = _userNameState
+    val passwordState: LiveData<Boolean> = _passwordState
+
+    val isRememberMeChecked: LiveData<Boolean> = _isRememberMeChecked
 
     // onUserNameChange is an event we're defining that the UI can invoke
     // (events flow up from UI)
@@ -47,14 +52,49 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
         _password.value = newPassword
     }
 
-    private fun storeRepositoriesLocally(data: List<CarTrackUsers>) {
+    fun onUserNameStateChange(newState: Boolean) {
+        _userNameState.value = newState
+    }
+
+    fun onPasswordStateChange(newState: Boolean) {
+        _passwordState.value = newState
+    }
+
+    fun onRememberMeIsChecked(newState: Boolean) {
+        _isRememberMeChecked.value = newState
+    }
+
+    fun storeUserLocally(data: Repository) {
         launch {
             val dao = UserDB(getApplication()).userRepositoryDao()
-            dao.deleteAllUsers()
+            val result = dao.saveUser(
+                Repository(
+                    username = "cartrack",
+                    password = "cartrack",
+                    isRememberMeTicked = isRememberMeChecked.value ?: false
+                )
+            )
         }
     }
 
-    private fun fetchFromRemote() {
+    fun validateUserLogin(): Boolean {
+        var valid = false
+        launch {
+            if (_userNameState.value == false && _passwordState.value == false && _isRememberMeChecked.value == true) {
+                val dao = UserDB(getApplication()).userRepositoryDao()
+                val result = dao.findUsernameByUsername(
+                    username = _username.value ?: "cartrack",
+                    password = _password.value ?: "cartrack",
+                )
+
+                valid = result.isNotEmpty()
+            }
+        }
+
+        return valid
+    }
+
+    fun fetchFromRemote() {
         disposable.add(
             apiService.getCarTrackUsers()
                 .subscribeOn(Schedulers.newThread())
@@ -62,6 +102,7 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
                 .subscribeWith(object : DisposableSingleObserver<List<CarTrackUsers>>() {
 
                     override fun onSuccess(data: List<CarTrackUsers>) {
+                        Log.d("COMPOSE", data.toString())
                         Toast.makeText(
                             getApplication(),
                             "Repositories retrieved from endpoint",

@@ -19,7 +19,9 @@ class ApiService {
     private val hostname = "jsonplaceholder.typicode.com"
     private val pinning: CertificatePinner = CertificatePinner.Builder().add(
         hostname, "sha256/"
-                + Cartrack.context.resources.openRawResource(R.raw.cartrack_cert)
+                + Cartrack.appContext.resources
+            .openRawResource(R.raw.cartrack_cert)
+            .bufferedReader().use { it.readText() }
     ).build()
 
     private fun getOkHttpClient(): OkHttpClient {

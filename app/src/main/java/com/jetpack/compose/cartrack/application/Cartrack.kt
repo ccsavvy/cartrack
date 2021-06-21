@@ -7,12 +7,12 @@ class Cartrack : Application() {
 
     companion object {
         @Volatile
-        lateinit var context: Context
-        private set
+        lateinit var appContext: Context
+            private set
     }
 
     override fun onCreate() {
         super.onCreate()
-        context = applicationContext
+        appContext = applicationContext
     }
 }

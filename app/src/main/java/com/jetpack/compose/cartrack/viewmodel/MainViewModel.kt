@@ -78,24 +78,27 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
         }
     }
 
-    fun validateUserLogin(): Boolean {
-        var valid = true
+    fun removeAllUsers() {
         launch {
-            valid = async {
-                var result: List<Repository> = emptyList()
-                if (_userNameState.value == false && _passwordState.value == false && _isRememberMeChecked.value == true) {
-                    val dao = UserDB(getApplication()).userRepositoryDao()
-                    result = dao.findUsernameByUsername(
-                        username = _username.value ?: "cartrack",
-                        password = _password.value ?: "cartrack",
-                    )
-                }
-
-                return@async result.isNotEmpty()
-
-            }.await()
+            val dao = UserDB(getApplication()).userRepositoryDao()
+            dao.deleteAllUsers()
         }
-        return valid
+    }
+
+    suspend fun validateUserLogin(): Boolean {
+        return async {
+            var result: List<Repository> = emptyList()
+            if (_userNameState.value == false && _passwordState.value == false) {
+                val dao = UserDB(getApplication()).userRepositoryDao()
+                result = dao.findUsernameByUsername(
+                    username = _username.value ?: "cartrack",
+                    password = _password.value ?: "cartrack",
+                )
+            }
+
+            return@async result.isNotEmpty()
+
+        }.await()
     }
 
     fun fetchFromRemote() {

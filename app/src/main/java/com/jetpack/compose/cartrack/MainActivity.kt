@@ -23,11 +23,10 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.jetpack.compose.cartrack.application.Cartrack
 import com.jetpack.compose.cartrack.model.Repository
 import com.jetpack.compose.cartrack.ui.theme.CartrackTheme
 import com.jetpack.compose.cartrack.viewmodel.MainViewModel
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,6 +43,9 @@ class MainActivity : ComponentActivity() {
 
                         val mainViewModel: MainViewModel =
                             viewModel(modelClass = MainViewModel::class.java)
+
+                        // delete all users
+                        mainViewModel.removeAllUsers()
 
                         // save car track username = cartrack; password = cartrack
                         mainViewModel.storeUserLocally(
@@ -203,21 +205,25 @@ fun RememberMeCheckBox(viewModel: MainViewModel, isChecked: State<Boolean>) {
 fun LoginButton(mainViewModel: MainViewModel) {
 
     val context = LocalContext.current
+    val composableScope = rememberCoroutineScope()
+
     Row(
         horizontalArrangement = Arrangement.End,
         modifier = Modifier.padding(8.dp)
     ) {
         Button(
             onClick = {
-                if (mainViewModel.validateUserLogin()) {
-                    // start activity or show another fragment to display user lists
-                     mainViewModel.fetchFromRemote()
-                } else {
-                    Toast.makeText(
-                        context,
-                        context.getString(R.string.error_invalid_credentials),
-                        Toast.LENGTH_SHORT
-                    ).show()
+                composableScope.launch {
+                    if (mainViewModel.validateUserLogin()) {
+                        // start activity or show another fragment to display user lists
+                        mainViewModel.fetchFromRemote()
+                    } else {
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.error_invalid_credentials),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
             },
             colors = ButtonDefaults.textButtonColors(

@@ -27,6 +27,7 @@ import com.jetpack.compose.cartrack.application.Cartrack
 import com.jetpack.compose.cartrack.model.Repository
 import com.jetpack.compose.cartrack.ui.theme.CartrackTheme
 import com.jetpack.compose.cartrack.viewmodel.MainViewModel
+import kotlinx.coroutines.coroutineScope
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

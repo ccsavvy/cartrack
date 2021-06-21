@@ -13,6 +13,7 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.observers.DisposableSingleObserver
 import io.reactivex.rxjava3.schedulers.Schedulers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import java.util.regex.Pattern
 
@@ -78,19 +79,22 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
     }
 
     fun validateUserLogin(): Boolean {
-        var valid = false
+        var valid = true
         launch {
-            if (_userNameState.value == false && _passwordState.value == false && _isRememberMeChecked.value == true) {
-                val dao = UserDB(getApplication()).userRepositoryDao()
-                val result = dao.findUsernameByUsername(
-                    username = _username.value ?: "cartrack",
-                    password = _password.value ?: "cartrack",
-                )
+            valid = async {
+                var result: List<Repository> = emptyList()
+                if (_userNameState.value == false && _passwordState.value == false && _isRememberMeChecked.value == true) {
+                    val dao = UserDB(getApplication()).userRepositoryDao()
+                    result = dao.findUsernameByUsername(
+                        username = _username.value ?: "cartrack",
+                        password = _password.value ?: "cartrack",
+                    )
+                }
 
-                valid = result.isNotEmpty()
-            }
+                return@async result.isNotEmpty()
+
+            }.await()
         }
-
         return valid
     }
 
